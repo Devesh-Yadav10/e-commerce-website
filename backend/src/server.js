@@ -18,10 +18,9 @@ const app = express();
 // ── Middleware ─────────────────────────────────────────────
 app.use(helmet());
 app.use(cors({
-  origin: [
-    "http://localhost:3000",       // local dev
-    "https://yourapp.vercel.app",  // your actual Vercel URL
-  ],
+  origin: process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(",")
+    : ["http://localhost:3000"],
   credentials: true,
 }));
 app.use(express.json({ limit: "10mb" }));
