@@ -493,18 +493,31 @@ function LoginPage({ setPage, setUser, dark, toast }) {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
-  const handle = () => {
+  const handle = async () => {
     const e = {};
-    if(!/\S+@\S+\.\S+/.test(form.email)) e.email="Valid email required";
-    if(form.password.length < 6) e.password="Password must be at least 6 characters";
+    if(!/\S+@\S+\.\S+/.test(form.email)) e.email = "Valid email required";
+    if(form.password.length < 6) e.password = "Password must be at least 6 characters";
     if(Object.keys(e).length){ setErrors(e); return; }
+
     setLoading(true);
-    setTimeout(()=>{
-      setLoading(false);
-      setUser({ id: uid(), name:"Demo User", email: form.email, role:"user" });
-      toast("Welcome back!","success");
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: form.email, password: form.password })
+      });
+      const data = await res.json();
+      if(!res.ok) throw new Error(data.error || "Login failed");
+
+      localStorage.setItem("token", data.token);
+      setUser(data.user);
+      toast("Welcome back!", "success");
       setPage("home");
-    }, 1200);
+    } catch(err) {
+      toast(err.message, "error");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -550,21 +563,34 @@ function SignupPage({ setPage, setUser, dark, toast }) {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
-  const handle = () => {
+  const handle = async () => {
     const e = {};
-    if(!form.name.trim()) e.name="Full name required";
-    if(!/\S+@\S+\.\S+/.test(form.email)) e.email="Valid email required";
-    if(!/^\d{10}$/.test(form.phone)) e.phone="10-digit phone required";
-    if(form.password.length < 8) e.password="Minimum 8 characters";
-    if(form.password !== form.confirm) e.confirm="Passwords don't match";
+    if(!form.name.trim()) e.name = "Full name required";
+    if(!/\S+@\S+\.\S+/.test(form.email)) e.email = "Valid email required";
+    if(!/^\d{10}$/.test(form.phone)) e.phone = "10-digit phone required";
+    if(form.password.length < 8) e.password = "Minimum 8 characters";
+    if(form.password !== form.confirm) e.confirm = "Passwords don't match";
     if(Object.keys(e).length){ setErrors(e); return; }
+
     setLoading(true);
-    setTimeout(()=>{
-      setLoading(false);
-      setUser({ id:uid(), name:form.name, email:form.email, role:"user" });
-      toast("Account created! Welcome to ShopSphere 🎉","success");
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ full_name: form.name, email: form.email, phone: form.phone, password: form.password })
+      });
+      const data = await res.json();
+      if(!res.ok) throw new Error(data.error || "Signup failed");
+
+      localStorage.setItem("token", data.token);
+      setUser(data.user);
+      toast("Account created! Welcome 🎉", "success");
       setPage("home");
-    }, 1400);
+    } catch(err) {
+      toast(err.message, "error");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const fields = [
