@@ -19,8 +19,8 @@ const app = express();
 app.use(helmet());
 app.use(cors({
   origin: [
-    "http://localhost:3000",       // local dev
-    "https://e-commerce-website-phi-gilt.vercel.app/",  // your actual Vercel URL
+    "http://localhost:3000",
+    "https://e-commerce-website-phi-gilt.vercel.app",
   ],
   credentials: true,
 }));
